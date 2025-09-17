@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+
+# VS Code
+.vscode
+
+# Python
+__pycache__
+*.pyc
+*.egg-info
+dist
+.ipynb_checkpoints
+*.pkl
+
+# Our things
+build
+*.pdf
