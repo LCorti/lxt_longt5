@@ -6,6 +6,7 @@ import lxt.efficient.models.qwen2 as qwen2
 import lxt.efficient.models.bert as bert
 import lxt.efficient.models.gpt2 as gpt2
 import lxt.efficient.models.vit_torch as vit_torch
+import lxt.efficient.models.t5 as t5
 
 
 DEFAULT_MAP = {
@@ -16,6 +17,7 @@ DEFAULT_MAP = {
     bert.modeling_bert: bert.attnLRP,
     gpt2.modeling_gpt2: gpt2.attnLRP,
     vit_torch.vision_transformer: vit_torch.cp_LRP,
+    t5.modeling_t5: t5.attnLRP,
 }
 
 
