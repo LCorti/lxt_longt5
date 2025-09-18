@@ -133,21 +133,23 @@ def layer_norm_forward(self, x):
     which is equivalent to the identity rule in a Gradient*Input framework.
     """
 
-    mean = x.mean(dim=-1, keepdim=True)
-    var = ((x - mean) ** 2).mean(dim=-1, keepdim=True)
-    if hasattr(self, "eps"):
+    if hasattr(self, "eps") and hasattr(self, "bias"):
+        mean = x.mean(dim=-1, keepdim=True)
+        var = ((x - mean) ** 2).mean(dim=-1, keepdim=True)
+        # Default operations for Llama, Qwen, etc.
         std = (var + self.eps).sqrt()
-    else:
-        # This is the name in T5LayerNorm
-        std = (var + self.variance_epsilon).sqrt()
-    y = (x - mean) / stop_gradient(std)
-    if self.weight is not None:
-        y *= self.weight
-    # T5 has no bias in T5LayerNorm
-    if hasattr(self, "bias"):
+        y = (x - mean) / stop_gradient(std)
+        if self.weight is not None:
+            y *= self.weight
         if self.bias is not None:
             y += self.bias
-
+    else:
+        # T5 uses a layer_norm which only scales and doesn't shift.
+        # We also need to access variables that are named differently.
+        var = x.pow(2).mean(-1, keepdim=True)
+        y = x * torch.rsqrt(var + self.variance_epsilon)
+        if self.weight is not None:
+            y *= self.weight
     return y
 
 
