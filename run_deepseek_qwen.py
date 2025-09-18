@@ -1,9 +1,10 @@
 import torch
 import transformers.models.qwen2.modeling_qwen2 as modeling_qwen2
 
+from transformers import AutoTokenizer
+
 from lxt.efficient import monkey_patch
 from lxt.utils import pdf_heatmap, clean_tokens
-from transformers import AutoTokenizer
 
 # modify the Qwen2 module to compute LRP in the backward pass
 monkey_patch(modeling_qwen2, verbose=True)
@@ -59,7 +60,7 @@ tokens = clean_tokens(tokens)
 
 print("attribution done")
 
-print(relevance)
+# print(relevance)
 
 # backend='xelatex' supports more characters
-# pdf_heatmap(tokens, relevance, path="output/deepseek_qwen.pdf", backend="pdflatex")
+pdf_heatmap(tokens, relevance, path="output/deepseek_qwen.pdf", backend="xelatex")
