@@ -111,9 +111,10 @@ if __name__ == "__main__":
             ForcedEOSTokenLogitsProcessor(
                 max_length=max_length, eos_token_id=eos_token_id
             ),
-            TopPLogitsWarper(top_p=0.95),
         ]
     )
+    if decoding_strategy == "sample":
+        logits_processor.append(TopPLogitsWarper(top_p=0.95))
 
     print("=" * 40)
     print("Running generation...")
