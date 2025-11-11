@@ -119,7 +119,7 @@ if __name__ == "__main__":
     print("=" * 40)
     print("Running generation...")
     curr_len = dec_input_ids.shape[-1]
-    relevance_scores = []
+    relevance_scores = {}
     next_token = None
     while curr_len <= max_length and next_token != eos_token_id:
         dec_input_embeds = model.get_input_embeddings()(dec_input_ids)
@@ -160,7 +160,7 @@ if __name__ == "__main__":
         )
         # Normalize relevance between [-1, 1] for plotting
         relevance = relevance / relevance.abs().max()
-        relevance_scores.append(relevance)
+        # relevance_scores.append(relevance)
 
         # Clear out the gradients after computing current relevance score
         model.zero_grad()
@@ -175,13 +175,19 @@ if __name__ == "__main__":
 
         # Save heatmap for current token
         tokens = tokenizer.convert_ids_to_tokens(enc_input_ids[0])
-        save_heatmap(len(relevance_scores) - 1, tokens, relevance, model_name)
+        # save_heatmap(len(relevance_scores) - 1, tokens, relevance, model_name)
+        tokens_relevance_dict = {k: v for k, v in zip(tokens, relevance.tolist())}
+        relevance_scores[next_token] = tokens_relevance_dict
 
     # print(dec_input_ids)
     resp_tokens = tokenizer.convert_ids_to_tokens(dec_input_ids[0])
     print(resp_tokens)
     print("Generated summary:")
     print(tokenizer.decode(dec_input_ids[0], skip_special_tokens=True))
+
+    print("=" * 40)
+    print(f"Relevance scores for first generated token {next_token}:")
+    print(relevance_scores[next_token])
 
     # Remove special characters that are not compatible wiht LaTeX
     # tokens = tokenizer.convert_ids_to_tokens(enc_input_ids[0])
