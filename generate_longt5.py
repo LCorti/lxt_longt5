@@ -6,7 +6,6 @@ from transformers import (
     AutoTokenizer,
     LogitsProcessorList,
     ForcedEOSTokenLogitsProcessor,
-    NoRepeatNGramLogitsProcessor,
     MinLengthLogitsProcessor,
     RepetitionPenaltyLogitsProcessor,
     TopPLogitsWarper,
@@ -86,6 +85,14 @@ if __name__ == "__main__":
     ).input_ids.to(model.device)
     dec_input_ids = model._shift_right(dec_input_ids)
 
+    # Add starting token
+    if dec_input_ids[0, 0] != model.config.decoder_start_token_id:
+        # Prepend start token if missing
+        start_token = torch.tensor(
+            [[model.config.decoder_start_token_id]], device=model.device
+        )
+        dec_input_ids = torch.cat([start_token, dec_input_ids], dim=-1)
+
     print("-" * 40)
     print(f"Encoder input size: {enc_input_ids.shape}")
     print(f"Decoder input size: {dec_input_ids.shape}")
@@ -96,7 +103,7 @@ if __name__ == "__main__":
     max_length = max_new_tokens + input_ids_seq_length
     max_length = max_length if max_length < max_output_length else max_output_length
     eos_token_id = tokenizer.eos_token_id
-    decoding_strategy = "sample"  # greedy
+    decoding_strategy = "greedy"  # greedy
 
     print("Output settings")
     print(f" - min_length: {min_length}")
@@ -105,8 +112,7 @@ if __name__ == "__main__":
 
     logits_processor = LogitsProcessorList(
         [
-            NoRepeatNGramLogitsProcessor(ngram_size=2),
-            RepetitionPenaltyLogitsProcessor(penalty=1.2),
+            RepetitionPenaltyLogitsProcessor(penalty=1.0),
             MinLengthLogitsProcessor(min_length=min_length, eos_token_id=eos_token_id),
             ForcedEOSTokenLogitsProcessor(
                 max_length=max_length, eos_token_id=eos_token_id
@@ -128,11 +134,17 @@ if __name__ == "__main__":
             decoder_inputs_embeds=dec_input_embeds.requires_grad_(),
             use_cache=False,
         ).logits
-        raw_next_logits = output_logits[0, -1, :].cpu()
-        dec_input_ids_copy = dec_input_ids.cpu()
-        next_token_scores = logits_processor(
-            dec_input_ids_copy, raw_next_logits.unsqueeze(0)
-        ).to(model.device)
+
+        if torch.backends.mps.is_available():
+            raw_next_logits = output_logits[0, -1, :].cpu()
+            dec_input_ids_copy = dec_input_ids.cpu()
+            next_token_scores = logits_processor(
+                dec_input_ids_copy, raw_next_logits.unsqueeze(0)
+            ).to(model.device)
+        else:
+            next_token_scores = logits_processor(
+                dec_input_ids, output_logits[0, -1, :].unsqueeze(0)
+            ).to(model.device)
         k = 1
 
         if decoding_strategy == "greedy":
@@ -163,9 +175,10 @@ if __name__ == "__main__":
         relevance_scores.append(relevance)
 
         # Clear out the gradients after computing current relevance score
+        if enc_input_embeds.grad is not None:
+            enc_input_embeds.grad = None
         model.zero_grad()
-        enc_input_embeds.grad = None
-        dec_input_embeds.grad = None
+        # dec_input_embeds.grad = None
 
         # Update for next step
         curr_len += 1
