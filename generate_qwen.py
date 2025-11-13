@@ -17,16 +17,6 @@ from lxt.efficient import monkey_patch
 from lxt.utils import pdf_heatmap, clean_tokens
 
 
-def print_tokens(tokens: torch.Tensor, logits: torch.Tensor = None):
-    if logits is not None:
-        # print the tokens and their logits
-        for token, logit in zip(tokens, logits):
-            print(f"Token: {token}, Logit: {logit.item()}")
-    else:
-        for token in tokens:
-            print(f"Token: {token}")
-
-
 def save_heatmap(pos, ref_tokens: list, relevance: list, model_name: str):
     tokens = clean_tokens(ref_tokens)
     # Removing up </s> tokens from the model
