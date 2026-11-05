@@ -1,10 +1,9 @@
 import torch
 import transformers.models.qwen2.modeling_qwen2 as modeling_qwen2
-
 from transformers import AutoTokenizer
 
 from lxt.efficient import monkey_patch
-from lxt.utils import pdf_heatmap, clean_tokens
+from lxt.utils import clean_tokens, pdf_heatmap
 
 # modify the Qwen2 module to compute LRP in the backward pass
 monkey_patch(modeling_qwen2, verbose=True)

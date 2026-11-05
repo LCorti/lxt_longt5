@@ -1,8 +1,8 @@
 import torch
+from transformers import AutoTokenizer
 
 from lxt.explicit.models.qwen2 import Qwen2ForCausalLM, attnlrp
-from lxt.utils import pdf_heatmap, clean_tokens
-from transformers import AutoTokenizer
+from lxt.utils import clean_tokens
 
 model_path = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
 model = Qwen2ForCausalLM.from_pretrained(

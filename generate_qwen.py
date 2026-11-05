@@ -1,20 +1,19 @@
-import numpy as np
+from pathlib import Path
+
 import torch
 import transformers.models.qwen2.modeling_qwen2 as modeling_qwen2
-
-from pathlib import Path
 from transformers import (
     AutoConfig,
     AutoTokenizer,
-    LogitsProcessorList,
     ForcedEOSTokenLogitsProcessor,
+    LogitsProcessorList,
     MinLengthLogitsProcessor,
     RepetitionPenaltyLogitsProcessor,
     TopPLogitsWarper,
 )
 
 from lxt.efficient import monkey_patch
-from lxt.utils import pdf_heatmap, clean_tokens
+from lxt.utils import clean_tokens, pdf_heatmap
 
 
 def save_heatmap(pos, ref_tokens: list, relevance: list, model_name: str):

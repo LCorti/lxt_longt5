@@ -1,10 +1,9 @@
 import torch
-
 from transformers import T5Tokenizer
 from transformers.models.t5 import modeling_t5
 
 from lxt.efficient import monkey_patch
-from lxt.utils import pdf_heatmap, clean_tokens
+from lxt.utils import clean_tokens, pdf_heatmap
 
 # modify the T5 module to compute LRP in the backward pass
 print("=" * 40)
