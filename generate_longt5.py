@@ -1,18 +1,17 @@
-import torch
-import numpy as np
-
 from pathlib import Path
+
+import torch
 from transformers import (
     AutoTokenizer,
-    LogitsProcessorList,
     ForcedEOSTokenLogitsProcessor,
+    LogitsProcessorList,
     MinLengthLogitsProcessor,
     RepetitionPenaltyLogitsProcessor,
     TopPLogitsWarper,
 )
 
 from lxt.efficient.models.longt5 import LongT5ForConditionalGeneration
-from lxt.utils import pdf_heatmap, clean_tokens
+from lxt.utils import clean_tokens, pdf_heatmap
 
 
 def print_tokens(tokens: torch.Tensor, logits: torch.Tensor = None):
